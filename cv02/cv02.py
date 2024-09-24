@@ -70,9 +70,9 @@ def read_wav(file):
             axes[i].set_ylabel('Amplituda')
             axes[i].legend(loc="upper right")
 
-        # plt.tight_layout()
-        # plt.suptitle(f"Signal from {file}", y=1.02)
-        # plt.show()
+        plt.tight_layout()
+        plt.suptitle(f"Signal from {file}", y=1.02)
+        plt.show()
    
 for file in FILES:
     read_wav(file)
