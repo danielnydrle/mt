@@ -1,3 +1,5 @@
+# 1
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -81,10 +83,8 @@ plt.show()
 # 4
 
 img = imread("cv03/cv03_red_object.jpg")
-img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-r = img_bgr[:,:,2] / (img_bgr.sum(axis=2) + 1e-6)
+r = img[:,:,0] / (img.sum(axis=2) + 1e-6)
 mask = r < 0.5
 img[mask] = 255
 plt.imshow(img)
 plt.show()
-
