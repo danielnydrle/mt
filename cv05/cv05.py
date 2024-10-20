@@ -1,55 +1,80 @@
-DICT = [str(x) for x in range(1, 6)]
+"""
+Daniel Nydrle
+Cv05 - LZW
+"""
 
-def compress_lzw(raw_data: str) -> str:
-    result = []
-    current = ""
-    for char in raw_data:
-        if current + char in DICT:
-            current += char
-        else:
-            result.append(DICT.index(current))
-            DICT.append(current + char)
-            current = char
-    if current:
-        result.append(DICT.index(current))
-    print(f"Dictionary: {DICT}, {len(DICT)}")
-    print(f"Compressed (indices): {result}")
-    compressed = "".join([chr(x + 33) for x in result])  # Převod na tisknutelné ASCII znaky
-    print(f"Compressed (ASCII): {compressed}")
-    return compressed
+class LZW:
+    """
+    LZW kompresor/dekompresor
+    """
+    def __init__(self, data: str, dictionary: str):
+        self.data = data
+        self.dict = dictionary
 
-
-def decompress_lzw(compressed_data: str) -> str:
-    result = []
-    DICT_decompression = DICT.copy()  # Vytvoříme kopii slovníku pro dekompresi
-    prev = compressed_data[0]
-    result.append(DICT_decompression[ord(prev) - 33])
-    for char in compressed_data[1:]:
-        code = ord(char) - 33
-        if code < len(DICT_decompression):
-            entry = DICT_decompression[code]
-        elif code == len(DICT_decompression):
-            entry = result[-1] + result[-1][0]
-        else:
-            raise ValueError(f"Invalid compressed data: {code}")
-        
-        result.append(entry)
-        DICT_decompression.append(result[-2] + entry[0])
-        prev = char
-    return "".join(result)
+    def compress(self):
+        """
+        LZW komprese
+        """
+        res = []
+        phrase = ""
+        for char in self.data:
+            if f"{phrase}{char}" in self.dict:
+                phrase += char
+            else:
+                res.append(self.dict.index(phrase))
+                self.dict.append(f"{phrase}{char}")
+                phrase = char
+        if phrase: # zbytek
+            res.append(self.dict.index(phrase))
+        compressed = "".join([chr(x + 33) for x in res]) # ASCII translace (neni potreba, pouze pro zobrazeni v konzoli)
+        return compressed
+    
+    def decompress(self, compressed_data):
+        """
+        LZW dekomprese
+        """
+        res = []
+        prev = compressed_data[0]
+        res.append(self.dict[ord(prev) - 33])
+        for char in compressed_data[1:]:
+            code = ord(char) - 33
+            entry = self.dict[code] if code < len(self.dict) else f"{res[-1]}{res[-1][0]}"
+            res.append(entry)
+            self.dict.append(f"{res[-2]}{entry[0]}")
+            prev = char
+        res = "".join(res)
+        return res
 
 
 def load_file(file_path):
+    """
+    Nacteni binarniho souboru
+    """
     with open(file_path, "rb") as file:
         return file.read()
+    
+def print_delimiter():
+    """
+    Vypsani oddelovace
+    """
+    print("=" * 50)
 
 if __name__ == "__main__":
-    data = load_file("cv05/Cv05_LZW_data.bin")
-    input = "".join([str(x) for x in data])
+    FILE_DATA = load_file("cv05/Cv05_LZW_data.bin")
+    INPUT = "".join([str(x) for x in FILE_DATA])
+    SYMBOL_DICT = [str(x) for x in range(1, 6)]
+    
+    print(f"Puvodni data: {INPUT}")
+    print_delimiter()
 
-    print(input)
-    compressed = compress_lzw(input)
-    print(compressed)
-    decompressed = decompress_lzw(compressed)
-    print(decompressed)
-    print(input == decompressed)
+    LZW = LZW(INPUT, SYMBOL_DICT)
+
+    COMPRESSED = LZW.compress()
+    print(f"Kompresovana data (s ASCII translaci): {COMPRESSED}")
+    print_delimiter()
+
+    DECOMPRESSED = LZW.decompress(COMPRESSED)
+    print(f"Dekompresovana data: {DECOMPRESSED}")
+    print_delimiter()
+
+    print(INPUT == DECOMPRESSED)
